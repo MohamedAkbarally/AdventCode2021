@@ -20,20 +20,26 @@ parseInput :: Text.Text -> Map Int Int
 parseInput ls = Map.fromList [ (i,length (filter (==i) s)) | i <- u]
     where
         s = map read (wordsWhen (==',') (Text.unpack ls)) :: [Int]
-        u = [0..8]
+        u = [0..9]
 
-daysPassed :: Int -> Map Int Int -> Int -> Map Int Int
-daysPassed 0 m 0 = m
-daysPassed x m 0 = daysPassed x (Map.adjust (+f) 7 (Map.insert 8 f m)) 1
+daysPassed :: Int -> Map Int Int -> Int -> Int
+daysPassed 0 m 0 = sum $ init $ Map.elems m
+daysPassed x m 0 = daysPassed x (Map.insert 9 f m) 1
     where f = maybeToInt (Map.lookup 0 m)
-daysPassed x m 8 = daysPassed (x-1) (Map.insert 7 (maybeToInt (Map.lookup 8 m)) m) 0
+daysPassed x m 7 = daysPassed x (Map.insert 6 (f+n) m) 8
+    where 
+        n = maybeToInt (Map.lookup 7 m)
+        f = maybeToInt (Map.lookup 9 m)   
+daysPassed x m 9 = daysPassed (x-1) (Map.insert 8 (maybeToInt (Map.lookup 9 m)) m) 0
 daysPassed x m n = daysPassed x (Map.insert (n-1) (maybeToInt (Map.lookup n m)) m) (n+1) 
-
 
 main :: IO()
 main = do
     ls <- fmap Text.lines (Text.readFile "./data/day_6/input.txt")
-    print $ daysPassed 2 (parseInput (head ls)) 0
+    putStr "Answer pt 1: "
+    print $ daysPassed 80 (parseInput (head ls)) 0
+    putStr "Answer pt 2: "
+    print $ daysPassed 256 (parseInput (head ls)) 0
 
 
 
