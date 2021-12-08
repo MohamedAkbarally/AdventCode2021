@@ -5,6 +5,10 @@ import Data.List
 import Data.Map (Map)
 import qualified Data.Map as Map
 
+maybeToInt :: Maybe Int -> Int
+maybeToInt (Just n) = n
+maybeToInt Nothing = 0
+
 -- func taken from https://stackoverflow.com/a/4981265
 wordsWhen :: (Char -> Bool) -> String -> [String]
 wordsWhen p s =  case dropWhile p s of
@@ -18,15 +22,18 @@ parseInput ls = Map.fromList [ (i,length (filter (==i) s)) | i <- u]
         s = map read (wordsWhen (==',') (Text.unpack ls)) :: [Int]
         u = [0..8]
 
-daysPassed :: Int -> Map Int Int -> Map Int Int
-daysPassed x m = n
-    where
-        n = update 8 10 m
+daysPassed :: Int -> Map Int Int -> Int -> Map Int Int
+daysPassed 0 m 0 = m
+daysPassed x m 0 = daysPassed x (Map.adjust (+f) 7 (Map.insert 8 f m)) 1
+    where f = maybeToInt (Map.lookup 0 m)
+daysPassed x m 8 = daysPassed (x-1) (Map.insert 7 (maybeToInt (Map.lookup 8 m)) m) 0
+daysPassed x m n = daysPassed x (Map.insert (n-1) (maybeToInt (Map.lookup n m)) m) (n+1) 
+
 
 main :: IO()
 main = do
     ls <- fmap Text.lines (Text.readFile "./data/day_6/input.txt")
-    print $ daysPassed 1 $ parseInput $ head ls
+    print $ daysPassed 2 (parseInput (head ls)) 0
 
 
 
